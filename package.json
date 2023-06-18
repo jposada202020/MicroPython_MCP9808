@@ -1,0 +1,8 @@
+{
+  "urls": [
+    ["micropython_mcp9808/__init__.py", "github:jposada202020/MicroPython_MCP9808/micropython_mcp9808/__init__.py"],
+    ["micropython_mcp9808/i2c_helpers.py", "github:jposada202020/MicroPython_MCP9808/micropython_mcp9808/i2c_helpers.py"],
+    ["micropython_mcp9808/mcp9808.py", "github:jposada202020/MicroPython_MCP9808/micropython_mcp9808/mcp9808.py"]
+  ],
+  "version": "0.1"
+}
