@@ -63,12 +63,14 @@ class MCP9808:
 
     .. code-block:: python
 
-        i2c = I2C(sda=Pin(2), scl=Pin(3))
-        mcp9808 = mcp9808.MCP9808(i2c)
+        i2c = I2C(1, sda=Pin(2), scl=Pin(3))
+        mcp = mcp9808.MCP9808(i2c)
 
     Now you have access to the attributes
 
     .. code-block:: python
+    
+        temp = mcp.temperature
 
     """
 
