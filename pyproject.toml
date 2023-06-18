@@ -40,7 +40,7 @@ classifiers = [
 dynamic = ["dependencies", "optional-dependencies"]
 
 [tool.setuptools]
-packages = ["mcp9808"]
+packages = ["micropython_mcp9808"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
