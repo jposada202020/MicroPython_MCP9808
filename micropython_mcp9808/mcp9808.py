@@ -57,13 +57,13 @@ class MCP9808:
     .. code-block:: python
 
         from machine import Pin, I2C
-        import mcp9808
+        from micropython_mcp9808 import mcp9808
 
     Once this is done you can define your `machine.I2C` object and define your sensor object
 
     .. code-block:: python
 
-        i2c = I2C(sda=Pin28), scl=Pin(3))
+        i2c = I2C(sda=Pin(2), scl=Pin(3))
         mcp9808 = mcp9808.MCP9808(i2c)
 
     Now you have access to the attributes
