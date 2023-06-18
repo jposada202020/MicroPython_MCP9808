@@ -1,0 +1,10 @@
+{
+  "urls": [
+    ["micropython_mcp9808/examples/mcp9808_hysteresis.py", "github:jposada202020/MicroPython_MCP9808/examples/mcp9808_hysteresis.py"],
+    ["micropython_mcp9808/examples/mcp9808_simpletest.py", "github:jposada202020/MicroPython_MCP9808/examples/mcp9808_simpletest.py"],
+    ["micropython_mcp9808/examples/mcp9808_power_mode.py", "github:jposada202020/MicroPython_MCP9808/examples/mcp9808_power_mode.py"],
+    ["micropython_mcp9808/examples/mcp9808_temperature_limits.py", "github:jposada202020/MicroPython_MCP9808/examples/mcp9808_temperature_limits.py"],
+    ["micropython_mcp9808/examples/mcp9808_temperature_resolution.py", "github:jposada202020/MicroPython_MCP9808/examples/mcp9808_temperature_resolution.py"]
+  ],
+  "version": "0.1"
+}

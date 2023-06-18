@@ -15,6 +15,7 @@ MicroPython Driver for the Microchip MCP9808 Temperature Sensor
 
 """
 
+from collections import namedtuple
 from micropython import const
 from micropython_mcp9808.i2c_helpers import CBits, RegisterStruct
 
@@ -25,10 +26,11 @@ __repo__ = "https://github.com/jposada202020/MicroPython_MCP9808.git"
 
 _CONFIG = const(0x01)
 _UPPER_TEMP = const(0x02)
-_LOWER_TEMP = const(0x02)
-_CRITICAL_TEMP = const(0x02)
+_LOWER_TEMP = const(0x03)
+_CRITICAL_TEMP = const(0x04)
 _TEMP = const(0x05)
 _REG_WHOAMI = const(0x07)
+_RESOLUTION = const(0x08)
 
 HYSTERESIS_0 = const(0b00)
 HYSTERESIS_1_5 = const(0b01)
@@ -39,6 +41,19 @@ hysteresis_values = (HYSTERESIS_0, HYSTERESIS_1_5, HYSTERESIS_3, HYSTERESIS_6)
 CONTINUOUS = const(0b00)
 SHUTDOWN = const(0b1)
 power_mode_values = (CONTINUOUS, SHUTDOWN)
+
+RESOLUTION_0_5_C = const(0b00)
+RESOLUTION_0_625_C = const(0b01)
+RESOLUTION_0_125_C = const(0b10)
+RESOLUTION_0_0625_C = const(0b11)
+temperature_resolution_values = (
+    RESOLUTION_0_5_C,
+    RESOLUTION_0_625_C,
+    RESOLUTION_0_125_C,
+    RESOLUTION_0_0625_C,
+)
+
+AlertStatus = namedtuple("AlertStatus", ["high_alert", "low_alert", "critical_alert"])
 
 
 class MCP9808:
@@ -69,7 +84,7 @@ class MCP9808:
     Now you have access to the attributes
 
     .. code-block:: python
-    
+
         temp = mcp.temperature
 
     """
@@ -79,10 +94,13 @@ class MCP9808:
 
     _hysteresis = CBits(2, _CONFIG, 9, 2, False)
     _power_mode = CBits(1, _CONFIG, 8, 2, False)
+
     _temperature_data = CBits(13, _TEMP, 0, 2, False)
-    _temperature_upper = CBits(11, _UPPER_TEMP, 2, 2, False)
-    _temperature_lower = CBits(11, _LOWER_TEMP, 2, 2, False)
-    _temperature_critical = CBits(11, _CRITICAL_TEMP, 2, 2, False)
+    _temperature_resolution = CBits(2, _RESOLUTION, 0)
+
+    critical_alert = CBits(1, _TEMP, 7, register_width=1)
+    high_alert = CBits(1, _TEMP, 6, register_width=1)
+    low_alert = CBits(1, _TEMP, 5, register_width=1)
 
     def __init__(self, i2c, address: int = 0x18) -> None:
         self._i2c = i2c
@@ -145,37 +163,45 @@ class MCP9808:
         self._power_mode = value
 
     @property
-    def temperature(self) -> float:
+    def temperature(self):
         """
         Temperature in Celsius
         """
-        return self._convert_temperature(self._temperature_data)
+        data = bytearray(2)
+        self._i2c.readfrom_mem_into(self._address, _TEMP, data)
+
+        return self._convert_temperature(data)
 
     @staticmethod
-    def _convert_temperature(temp: int) -> float:
+    def _convert_temperature(temp: bytearray) -> float:
 
-        high_byte = temp >> 8
-        low_byte = temp & 0xFF
-        if high_byte & 0x10 == 0x10:
-            high_byte = high_byte & 0x0F
-            return 256 - (high_byte * 16 + low_byte / 16.0)
-        return high_byte * 16 + low_byte / 16.0
+        temp[0] = temp[0] & 0x1F
+        if temp[0] & 0x10 == 0x10:
+            temp[0] = temp[0] & 0x0F
+            return (temp[0] * 16 + temp[1] / 16.0) - 256
+        return temp[0] * 16 + temp[1] / 16.0
 
     @property
     def temperature_upper(self) -> float:
         """
         Upper temperature in Celsius
         """
-        return self._convert_temperature(self._temperature_upper)
+        return self._get_temperature(_UPPER_TEMP)
 
     @temperature_upper.setter
     def temperature_upper(self, value: int) -> None:
         if not isinstance(value, int):
             raise ValueError("Temperature must be an int value")
-        self._temperature_upper = self._limit_temperatures(value)
+        self._limit_temperatures(value, _UPPER_TEMP)
 
-    @staticmethod
-    def _limit_temperatures(temp: int) -> int:
+    def _get_temperature(self, register_address):
+
+        data = bytearray(2)
+        self._i2c.readfrom_mem_into(self._address, register_address, data)
+
+        return self._convert_temperature(data)
+
+    def _limit_temperatures(self, temp: int, register_address):
         """Internal function to setup limit temperature
         :param int temp: temperature limit
         """
@@ -192,32 +218,104 @@ class MCP9808:
 
         low_byte = (temp & 0x0F) << 4
 
-        value = high_byte << 8 | low_byte
-
-        return value
+        self._i2c.writeto_mem(
+            self._address, register_address, bytes([high_byte, low_byte])
+        )
 
     @property
     def temperature_lower(self) -> float:
         """
         Lower temperature in Celsius
         """
-        return self._convert_temperature(self._temperature_lower)
+        return self._get_temperature(_LOWER_TEMP)
 
     @temperature_lower.setter
     def temperature_lower(self, value: int) -> None:
         if not isinstance(value, int):
             raise ValueError("Temperature must be an int value")
-        self._temperature_lower = self._limit_temperatures(value)
+        self._limit_temperatures(value, _LOWER_TEMP)
 
     @property
     def temperature_critical(self) -> float:
         """
         Critical temperature in Celsius
         """
-        return self._convert_temperature(self._temperature_critical)
+        return self._get_temperature(_CRITICAL_TEMP)
 
     @temperature_critical.setter
     def temperature_critical(self, value: int) -> None:
         if not isinstance(value, int):
             raise ValueError("Temperature must be an int value")
-        self._temperature_critical = self._limit_temperatures(value)
+        self._limit_temperatures(value, _CRITICAL_TEMP)
+
+    @property
+    def alert_status(self):
+        """The current triggered status of the high and low temperature alerts as a AlertStatus
+        named tuple with attributes for the triggered status of each alert.
+
+        .. code-block :: python
+
+            import time
+            from machine import Pin, I2C
+            from micropython_mcp9808 import mcp9808
+
+            i2c = I2C(1, sda=Pin(2), scl=Pin(3))  # Correct I2C pins for RP2040
+            mcp = mcp9808.MCP9808(i2c)
+
+            mcp.temperature_lower = 20
+            mcp.temperature_upper = 23
+            mcp.temperature_critical = 30
+
+            print("High limit: {}".format(mcp.temperature_upper))
+            print("Low limit: {}".format(mcp.temperature_lower))
+            print("Critical limit: {}".format(mcp.temperature_critical))
+
+            while True:
+                print("Temperature: {:.2f}C".format(mcp.temperature))
+                alert_status = tmp.alert_status
+                if alert_status.high_alert:
+                    print("Temperature above high set limit!")
+                if alert_status.low_alert:
+                    print("Temperature below low set limit!")
+                if alert_status.critical_alert:
+                    print("Temperature above critical set limit!")
+                time.sleep(1)
+
+        """
+
+        return AlertStatus(
+            high_alert=self.high_alert,
+            low_alert=self.low_alert,
+            critical_alert=self.critical_alert,
+        )
+
+    @property
+    def temperature_resolution(self) -> str:
+        """
+        Sensor temperature_resolution
+
+        +------------------------------------------+---------------------------+
+        | Mode                                     | Value                     |
+        +==========================================+===========================+
+        | :py:const:`mcp9808.RESOLUTION_0_5_C`     | :py:const:`0b00` 0.5°C    |
+        +------------------------------------------+---------------------------+
+        | :py:const:`mcp9808.RESOLUTION_0_625_C`   | :py:const:`0b01` 0.25°C   |
+        +------------------------------------------+---------------------------+
+        | :py:const:`mcp9808.RESOLUTION_0_125_C`   | :py:const:`0b10` 0.125°C  |
+        +------------------------------------------+---------------------------+
+        | :py:const:`mcp9808.RESOLUTION_0_0625_C`  | :py:const:`0b11` 0.0625°C |
+        +------------------------------------------+---------------------------+
+        """
+        values = (
+            "RESOLUTION_0_5_C",
+            "RESOLUTION_0_625_C",
+            "RESOLUTION_0_125_C",
+            "RESOLUTION_0_0625_C",
+        )
+        return values[self._temperature_resolution]
+
+    @temperature_resolution.setter
+    def temperature_resolution(self, value: int) -> None:
+        if value not in temperature_resolution_values:
+            raise ValueError("Value must be a valid temperature_resolution setting")
+        self._temperature_resolution = value

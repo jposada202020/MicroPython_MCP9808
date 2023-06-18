@@ -24,3 +24,21 @@ Example showing the Power mode setting
 .. literalinclude:: ../examples/mcp9808_power_mode.py
     :caption: examples/mcp9808_power_mode.py
     :lines: 5-
+
+Temperature Limits
+--------------------
+
+Example showing temperature limits
+
+.. literalinclude:: ../examples/mcp9808_temperature_limits.py
+    :caption: examples/mcp9808_temperature_limits.py
+    :lines: 5-
+
+Temperature resolution settings
+--------------------------------
+
+Example showing the Temperature resolution setting
+
+.. literalinclude:: ../examples/mcp9808_temperature_resolution.py
+    :caption: examples/mcp9808_temperature_resolution.py
+    :lines: 5-
