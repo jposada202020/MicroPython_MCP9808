@@ -172,7 +172,7 @@ class MCP9808:
         return self._convert_temperature(self._temperature_upper)
 
     @temperature_upper.setter
-    def temperature_upper(self, value:int) -> None:
+    def temperature_upper(self, value: int) -> None:
         if not isinstance(value, int):
             raise ValueError("Temperature must be an int value")
         self._temperature_upper = self._limit_temperatures(value)
