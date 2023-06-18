@@ -38,7 +38,7 @@ HYSTERESIS_3 = const(0b10)
 HYSTERESIS_6 = const(0b11)
 hysteresis_values = (HYSTERESIS_0, HYSTERESIS_1_5, HYSTERESIS_3, HYSTERESIS_6)
 
-CONTINUOUS = const(0b00)
+CONTINUOUS = const(0b0)
 SHUTDOWN = const(0b1)
 power_mode_values = (CONTINUOUS, SHUTDOWN)
 
