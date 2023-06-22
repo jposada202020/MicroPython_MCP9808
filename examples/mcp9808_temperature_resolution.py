@@ -18,3 +18,4 @@ while True:
             temp = mcp.temperature
             print("Temperature: {:.2f}C".format(temp))
             time.sleep(0.5)
+        mcp.temperature_resolution = temperature_resolution
