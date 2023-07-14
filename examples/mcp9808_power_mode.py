@@ -15,7 +15,7 @@ while True:
     for power_mode in mcp9808.power_mode_values:
         print("Current Power mode setting: ", mcp.power_mode)
         for _ in range(10):
-            temp = mcp.temperature
-            print("Temperature: {:.2f}C".format(temp))
+            print(f"Temperature: {mcp.temperature:.2f}°C")
+            print()
             time.sleep(0.5)
         mcp.power_mode = power_mode

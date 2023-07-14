@@ -20,11 +20,9 @@ authors = [
 urls = {Homepage = "https://github.com/jposada202020/MicroPython_MCP9808"}
 keywords = [
     "sensor",
-    "micropython",
     "mcp9808",
     "temperature",
     "microchip",
-    "mcp9808",
     "temperature",
     "micropython",
 ]

@@ -14,7 +14,8 @@ mcp.temperature_upper = 25
 mcp.temperature_critical = 35
 
 while True:
-    print("Temperature: {:.2f}C".format(mcp.temperature))
+    print(f"Temperature: {mcp.temperature:.2f}°C")
+    print()
     alert_status = mcp.alert_status
     if alert_status.high_alert:
         print("Temperature above high set limit!")

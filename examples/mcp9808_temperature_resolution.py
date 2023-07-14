@@ -15,7 +15,7 @@ while True:
     for temperature_resolution in mcp9808.temperature_resolution_values:
         print("Current Temperature resolution setting: ", mcp.temperature_resolution)
         for _ in range(10):
-            temp = mcp.temperature
-            print("Temperature: {:.2f}C".format(temp))
+            print(f"Temperature: {mcp.temperature:.2f}°C")
+            print()
             time.sleep(0.5)
         mcp.temperature_resolution = temperature_resolution

@@ -174,7 +174,6 @@ class MCP9808:
 
     @staticmethod
     def _convert_temperature(temp: bytearray) -> float:
-
         temp[0] = temp[0] & 0x1F
         if temp[0] & 0x10 == 0x10:
             temp[0] = temp[0] & 0x0F
@@ -195,7 +194,6 @@ class MCP9808:
         self._limit_temperatures(value, _UPPER_TEMP)
 
     def _get_temperature(self, register_address):
-
         data = bytearray(2)
         self._i2c.readfrom_mem_into(self._address, register_address, data)
 

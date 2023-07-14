@@ -10,6 +10,6 @@ i2c = I2C(1, sda=Pin(2), scl=Pin(3))  # Correct I2C pins for RP2040
 mcp = mcp9808.MCP9808(i2c)
 
 while True:
-    temp = mcp.temperature
-    print("Temperature: {:.2f}C".format(temp))
+    print(f"Temperature: {mcp.temperature:.2f}°C")
+    print()
     time.sleep(0.5)
